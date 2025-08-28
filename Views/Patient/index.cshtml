@@ -1,0 +1,12 @@
+@{
+    ViewData["Title"] = "Patients";
+}
+<h1>@ViewData["Title"]</h1>
+
+<button type="button" class="btn btn-primary btn-sm"><a class="nav-link text-dark" asp-area="" asp-controller="Patient" asp-action="AjouterPatient">Ajouter patients</a></button>
+                            
+
+<p> Nombre de Patients : @ViewData["MaxPatientsPerPage"] </p>
+<br>
+<p>Liste des patients :</p>
+
