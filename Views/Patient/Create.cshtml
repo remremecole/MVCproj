@@ -1,0 +1,43 @@
+@model MVCproj.Models.Patient
+<h2>Ajouter un patient</h2>
+<form asp-action="Create" method="post">
+@Html.AntiForgeryToken()
+<div class="mb-3">
+<label asp-for="Prenom" class="form-label"></label>
+<input asp-for="Prenom" class="form-control" />
+<span asp-validation-for="Prenom" class="text-danger"></span>
+</div>
+<div class="mb-3">
+<label asp-for="Adresse" class="form-label"></label>
+<input asp-for="Adresse" class="form-control" />
+</div>
+<div class="mb-3">
+<label asp-for="Ville" class="form-label"></label>
+<input asp-for="Ville" class="form-control" />
+</div>
+<div class="mb-3">
+<label asp-for="DateNaissance" class="form-label"></label>
+<input asp-for="DateNaissance" type="date" class="form-control" />
+<span asp-validation-for="DateNaissance" class="text-danger"></span>
+</div>
+<div class="mb-3">
+<label asp-for="Sexe" class="form-label"></label>
+<select asp-for="Sexe" class="form-select">
+<option value="M">Masculin</option>
+<option value="F">Féminin</option>
+</select>
+<span asp-validation-for="Sexe" class="text-danger"></span>
+</div>
+<div class="mb-3">
+<label asp-for="Poids" class="form-label"></label>
+<input asp-for="Poids" type="number" step="0.01" class="form-control" />
+</div>
+<div class="mb-3">
+<label asp-for="NumeroSecu" class="form-label"></label>
+<input asp-for="NumeroSecu" class="form-control" />
+<span asp-validation-for="NumeroSecu" class="text-danger"></span>
+</div>
+<button class="btn btn-success" type="submit">Enregistrer</button>
+<a asp-action="Index" class="btn btn-secondary">Annuler</a>
+</form>
+@section Scripts{ <partial name="_ValidationScriptsPartial" /> }

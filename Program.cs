@@ -1,47 +1,72 @@
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MVCproj.Data;
 using MVCproj.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
+
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Ajout du DbContext AVANT builder.Build()
+
 builder.Services.AddDbContext<MedManagerContext>(options =>
-    options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString),
-        mySqlOptions =>
-        {
-            mySqlOptions.EnableRetryOnFailure(3);
-        }
-    )
+options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
 );
 
-// Service métier (PatientService)
-builder.Services.AddScoped<IPatientService, PatientService>();
 
-// MVC
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireDigit = false;
+}).AddEntityFrameworkStores<MedManagerContext>();
+
+
 builder.Services.AddControllersWithViews();
+
+
+// DI Services
+builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IMedicamentService, MedicamentService>();
+builder.Services.AddScoped<IOrdonnanceService, OrdonnanceService>();
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseMigrationsEndPoint();
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
 
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}"
-).WithStaticAssets();
+name: "default",
+pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+app.MapRazorPages(); // Identity UI
+
 
 app.Run();

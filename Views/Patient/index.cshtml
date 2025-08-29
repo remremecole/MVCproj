@@ -1,12 +1,33 @@
+@model IEnumerable<MVCproj.Models.Patient>
 @{
-    ViewData["Title"] = "Patients";
+ViewData["Title"] = "Patients";
 }
-<h1>@ViewData["Title"]</h1>
-
-<button type="button" class="btn btn-primary btn-sm"><a class="nav-link text-dark" asp-area="" asp-controller="Patient" asp-action="AjouterPatient">Ajouter patients</a></button>
-                            
-
-<p> Nombre de Patients : @ViewData["MaxPatientsPerPage"] </p>
-<br>
-<p>Liste des patients :</p>
-
+<h2>Patients</h2>
+<form method="get" class="mb-3">
+<input name="search" class="form-control" value="@ViewData["CurrentFilter"]" placeholder="Rechercher..." />
+</form>
+<a asp-action="Create" class="btn btn-primary mb-2">Ajouter</a>
+<table class="table table-striped">
+<thead>
+<tr>
+<th>#</th><th>Prénom</th><th>Ville</th><th>N° Sécu</th><th></th>
+</tr>
+</thead>
+<tbody>
+@foreach (var p in Model)
+{
+<tr>
+<td>@p.Id</td>
+<td>@p.Prenom</td>
+<td>@p.Ville</td>
+<td>@p.NumeroSecu</td>
+<td>
+<a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-secondary">Edit</a>
+<form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline">
+<button class="btn btn-sm btn-danger" type="submit">Del</button>
+</form>
+</td>
+</tr>
+}
+</tbody>
+</table>

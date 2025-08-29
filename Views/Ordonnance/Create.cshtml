@@ -1,0 +1,42 @@
+@model MVCproj.Models.Ordonnance
+@{
+var meds = ViewBag.Medicaments as IEnumerable<MVCproj.Models.Medicament> ?? Enumerable.Empty<MVCproj.Models.Medicament>();
+var patients = ViewBag.Patients as IEnumerable<MVCproj.Models.Patient> ?? Enumerable.Empty<MVCproj.Models.Patient>();
+}
+<h2>Nouvelle ordonnance</h2>
+<form asp-action="Create" method="post">
+@Html.AntiForgeryToken()
+<div class="row g-3">
+<div class="col-md-4">
+<label class="form-label">Patient</label>
+<select name="IdPatient" class="form-select">
+@foreach (var p in patients){ <option value="@p.Id">@p.Prenom (#@p.Id)</option> }
+</select>
+</div>
+<div class="col-md-3">
+<label asp-for="DateDebut" class="form-label"></label>
+<input asp-for="DateDebut" type="date" class="form-control" />
+</div>
+<div class="col-md-3">
+<label asp-for="DateFin" class="form-label"></label>
+<input asp-for="DateFin" type="date" class="form-control" />
+</div>
+<div class="col-md-2">
+<label asp-for="RefComplementaire" class="form-label"></label>
+<input asp-for="RefComplementaire" class="form-control" />
+</div>
+</div>
+<hr />
+<div id="lignes">
+<div class="row g-2 mb-2">
+<div class="col-md-6">
+<select name="medicamentIds" class="form-select">
+@foreach (var m in meds){ <option value="@m.Id">@m.Nom</option> }
+</select>
+</div>
+<div class="col-md-2"><input name="qtes" class="form-control" placeholder="Quantité" /></div>
+<div class="col-md-4"><input name="posologies" class="form-control" placeholder="Posologie" /></div>
+</div>
+</div>
+<button type="submit" class="btn btn-success">Créer</button>
+</form>

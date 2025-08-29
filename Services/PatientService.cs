@@ -1,52 +1,51 @@
 using Microsoft.EntityFrameworkCore;
-using MVCproj.Models;
 using MVCproj.Data;
+using MVCproj.Models;
+
 
 namespace MVCproj.Services
 {
-    public class PatientService : IPatientService
-    {
-        private readonly MedManagerContext _context;
+public class PatientService : IPatientService
+{
+private readonly MedManagerContext _ctx;
+public PatientService(MedManagerContext ctx) => _ctx = ctx;
 
-        public PatientService(MedManagerContext context)
-        {
-            _context = context;
-        }
 
-        public async Task<IEnumerable<Patient>> GetAllAsync()
-            => await _context.Patients.ToListAsync();
+public async Task<IEnumerable<Patient>> GetAllAsync(string? search = null)
+{
+var q = _ctx.Patients.AsQueryable();
+if (!string.IsNullOrWhiteSpace(search))
+{
+q = q.Where(p => p.Prenom.Contains(search)
+|| (p.Adresse != null && p.Adresse.Contains(search))
+|| (p.Ville != null && p.Ville.Contains(search))
+|| p.NumeroSecu.Contains(search));
+}
+return await q.OrderByDescending(p => p.Id).ToListAsync();
+}
 
-        public async Task<IEnumerable<Patient>> SearchAsync(string search)
-            => await _context.Patients
-                .Where(p => p.Prenom.Contains(search)
-                         || (p.Adresse != null && p.Adresse.Contains(search))
-                         || (p.Ville != null && p.Ville.Contains(search))
-                         || (p.NumeroSecu != null && p.NumeroSecu.Contains(search)))
-                .ToListAsync();
 
-        public async Task<Patient?> GetByIdAsync(int id)
-            => await _context.Patients.FindAsync(id);
+public Task<Patient?> GetByIdAsync(int id) => _ctx.Patients.FindAsync(id).AsTask();
 
-        public async Task CreateAsync(Patient patient)
-        {
-            _context.Patients.Add(patient);
-            await _context.SaveChangesAsync();
-        }
 
-        public async Task UpdateAsync(Patient patient)
-        {
-            _context.Patients.Update(patient);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var patient = await _context.Patients.FindAsync(id);
-            if (patient != null)
-            {
-                _context.Patients.Remove(patient);
-                await _context.SaveChangesAsync();
-            }
-        }
-    }
+public async Task CreateAsync(Patient patient)
+{
+_ctx.Patients.Add(patient);
+await _ctx.SaveChangesAsync();
+}
+public async Task UpdateAsync(Patient patient)
+{
+_ctx.Patients.Update(patient);
+await _ctx.SaveChangesAsync();
+}
+public async Task DeleteAsync(int id)
+{
+var p = await _ctx.Patients.FindAsync(id);
+if (p != null)
+{
+_ctx.Patients.Remove(p);
+await _ctx.SaveChangesAsync();
+}
+}
+}
 }

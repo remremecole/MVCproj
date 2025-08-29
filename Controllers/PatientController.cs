@@ -1,59 +1,81 @@
-using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MVCproj.Models;
-using MVCproj.Services; // <-- pour IPatientService
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
+using MVCproj.Services;
+
 
 namespace MVCproj.Controllers
 {
-    public class PatientController : Controller
-    {
-        private readonly IConfiguration _configuration;
-        private readonly IPatientService _patientService;
-        private readonly ILogger<PatientController> _logger;
+[Authorize]
+public class PatientController : Controller
+{
+private readonly IPatientService _svc;
+private readonly ILogger<PatientController> _logger;
+public PatientController(IPatientService svc, ILogger<PatientController> logger)
+{
+_svc = svc; _logger = logger;
+}
 
-        // Injection des dépendances
-        public PatientController(IConfiguration configuration,
-                                 IPatientService patientService,
-                                 ILogger<PatientController> logger)
-        {
-            _configuration = configuration;
-            _patientService = patientService;
-            _logger = logger;
-        }
 
-        public ActionResult Index()
-        {
-            var somVal = _configuration["MedManagerSettings:MaxPatientsPerPage"];
-            ViewData["MaxPatientsPerPage"] = somVal;
-            return View();
-        }
+public async Task<IActionResult> Index(string? search)
+{
+ViewData["CurrentFilter"] = search;
+var items = await _svc.GetAllAsync(search);
+return View(items);
+}
 
-        public IActionResult AjouterPatient()
-        {
-            return View();
-        }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Patient patient)
-        {
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    await _patientService.CreateAsync(patient);
-                    TempData["Success"] = "Patient ajouté avec succès";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Erreur lors de l'ajout du patient");
-                    ModelState.AddModelError("", "Erreur lors de la sauvegarde");
-                }
-            }
-            return View(patient);
-        }
-    }
+[HttpGet]
+public IActionResult Create() => View();
+
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Create(Patient p)
+{
+if (!ModelState.IsValid) return View(p);
+try
+{
+await _svc.CreateAsync(p);
+TempData["Success"] = "Patient créé avec succès";
+return RedirectToAction(nameof(Index));
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "Erreur création patient");
+ModelState.AddModelError(string.Empty, "Erreur lors de l'enregistrement");
+return View(p);
+}
+}
+
+
+[HttpGet]
+public async Task<IActionResult> Edit(int id)
+{
+var p = await _svc.GetByIdAsync(id);
+if (p == null) return NotFound();
+return View(p);
+}
+
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Edit(Patient p)
+{
+if (!ModelState.IsValid) return View(p);
+await _svc.UpdateAsync(p);
+TempData["Success"] = "Patient mis à jour";
+return RedirectToAction(nameof(Index));
+}
+
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Delete(int id)
+{
+await _svc.DeleteAsync(id);
+TempData["Success"] = "Patient supprimé";
+return RedirectToAction(nameof(Index));
+}
+}
 }
